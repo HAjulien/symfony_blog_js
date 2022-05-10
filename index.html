@@ -12,9 +12,14 @@
     
     <div class="container">
         <h1>Blog en js</h1>
+        
         <nav>
             <button id="button_posts" > Articles </button>
+            <button id="button_categories" > Categories </button>
+            <button id="button_users" > users </button>
         </nav>
+        <div id="loader" style="display:none" ><img src="sonic.gif" alt=""/></div>
+        <div id="root"></div>
     </div>
 
 
@@ -22,26 +27,140 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
     <script>
         window.onload = function(){
-            document.getElementById("button_posts").addEventListener('click', function (){
-                console.log("BEGIN POSTS");
 
-                fetch('http://localhost:8000/api/posts')
-                
+            function createNode(element){
+                return document.createElement(element)
+            }
+
+            function append(parent, el){
+                return parent.appendChild(el)
+            }
+
+            const root = document.getElementById("root")
+            const loader = document.getElementById("loader")
+
+            document.getElementById("button_posts").addEventListener('click', function (){
+            root.innerHTML =" "
+            loader.style.display = "block"
+            console.log("BEGIN POSTS")
+
+
+
+            fetch('http://localhost:8000/api/posts')
+            
+            .then (response =>{
+                console.log("Response = " + response)
+                return response.json()
+            })
+
+            .then ( data =>{
+                console.log('Data = ' , data)
+                let posts = data['hydra:member']
+                console.log(posts)
+                return posts.map(function (post){
+                    console.log('Post = ', post)
+                    // let element = document.createElement("h2")
+                    // document.getElementById("root").appendChild(element)
+                    // element.innerHTML = `${post.title}`
+
+                    let h2 = createNode('h2')
+                    append(root, h2)
+                    h2.innerHTML =  `${post.title}`
+
+
+                    let img = createNode('img')
+                    append(root, img)
+                    img.src =  `${post.image}`
+
+                    let div = createNode('div')
+                    append(root, div)
+                    div.innerHTML =  `${post.content}`
+                    div = createNode('div')
+                    append(root, div)
+                    div.innerHTML =  `${post.createdAt}`
+                    loader.style.display = "none"
+
+
+                })
+            })
+
+            console.log("END POSTS");
+
+            })
+
+            
+            document.getElementById("button_categories").addEventListener('click', function (){
+
+                root.innerHTML =" "
+                loader.style.display= 'block'
+
+
+                fetch('http://localhost:8000/api/categories')
+
                 .then (response =>{
-                    console.log("Response = " + response);
-                    return response.json();
+                console.log("Response = " + response);
+                return response.json();
                 })
 
                 .then ( data =>{
                     console.log('Data = ' , data);
-                    let posts = data['hydra:member'];
-                    console.log(posts);
-                    return posts.map(function (post){
-                        console.log(post);
+                    let categories = data['hydra:member'];
+                    console.log(categories);
+                    return categories.map(function (category){
+                        console.log('category = ', category)
+
+                        let h2 = createNode('h2')
+                        append(root, h2)
+                        h2.innerHTML =  `${category.name}`
+
+                        let div = createNode('div')
+                        append(root, div)
+                        div.innerHTML =  `${category.slug}`
+                        loader.style.display = "none"
+
+
+
                     })
                 })
 
-                console.log("END POSTS");
+            })
+            document.getElementById("button_users").addEventListener('click', function (){
+
+                root.innerHTML =" "
+                loader.style.display= 'block'
+
+
+                fetch('http://localhost:8000/api/users')
+
+                .then (response =>{
+                console.log("Response = " + response);
+                return response.json();
+                })
+
+                .then ( data =>{
+                    console.log('Data = ' , data);
+                    let users = data['hydra:member'];
+                    console.log(users);
+                    return users.map(function (user){
+                        console.log('user = ', user)
+
+                        let h2 = createNode('h2')
+                        append(root, h2)
+                        h2.innerHTML =  `${user.id} - ${user.username}`
+
+                        let div = createNode('div')
+                        append(root, div)
+                        div.innerHTML =  `${user.verified}`
+
+                        div = createNode('div')
+                        append(root, div)
+                        div.innerHTML =  `${user.roles[0]}`
+
+                        loader.style.display = "none"
+
+                    })
+                })
+
             })
         }
     </script>
