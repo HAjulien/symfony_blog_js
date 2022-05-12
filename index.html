@@ -47,7 +47,7 @@
             const logout = document.getElementById("button_logout")
             const login = document.getElementById("button_login")
             const loader = document.getElementById("loader")
-            const api = 'http://localhost:8000/api'
+            const api = 'http://localhost:8000'
 
             if(token && token != "undefined"){
                 button_users.style.display ="inline-block"
@@ -58,7 +58,7 @@
             //creation nav avec les catégories
             console.log('Begin NAV BAR') 
             
-            fetch(api + '/categories')
+            fetch(api + '/api/categories')
             
             .then (response =>{
                 console.log("Response = " + response);
@@ -72,11 +72,57 @@
                 return categories.map(function (category){
                     console.log('category = ', category)
                     
-                    let button = createNode('button')
-                    append(nav_category, button )
-                    button.innerHTML =  `${category.name}`
-                })
+                    let a = createNode('a')
+                    append(nav_category, a )
+                    a.innerHTML =  `${category.name}`
+                    a.href = api + `/api/categories/${category.id}`
+                    a.classList.add('btn','btn-primary', 'm-1')
+                    a.addEventListener('click', function(event){
+                        loader.style.display = "block"
+                        event.preventDefault()                      
+                        fetch(a.href)
 
+                        .then (response =>{
+                        return response.json();
+                        })
+
+                        .then ( data =>{
+                            console.log('Data = ' , data)
+                            root.innerHTML= ''
+                            h2 = createNode('h2')
+                            append(root, h2)
+                            h2.innerHTML = `Catégorie = ${category.name}`
+                            data.posts.map(function (post){
+                                console.log('Post =', post)
+
+                                fetch(api + post)
+                                .then (response =>{
+                                    console.log("Response = " + response)
+                                    return response.json()
+                                })
+                                .then ( post =>{
+                                    console.log('Post = ' , post)
+
+                                    let h3 = createNode('h3')
+                                    append(root, h3)
+                                    h3.innerHTML =  `${post.title}`
+
+                                    let img = createNode('img')
+                                    append(root, img)
+                                    img.src =  `${post.image}`
+
+                                    let div = createNode('div')
+                                    append(root, div)
+                                    div.innerHTML =  `${post.content.substring(0, 500)}...`
+                                    div = createNode('div')
+                                    append(root, div)
+                                    div.innerHTML =  `${post.createdAt}`
+                                })
+                            })
+                            loader.style.display = "none"
+                        })
+                    })
+                })
             console.log('end NAV BAR') 
             })
 
@@ -87,7 +133,7 @@
 
 
 
-            fetch('http://localhost:8000/api/posts')
+            fetch(api + '/api/posts')
             
             .then (response =>{
                 console.log("Response = " + response)
@@ -166,7 +212,7 @@
                 const token = localStorage.getItem('token')
                 console.log('token = ' , token);
 
-                fetch(api + '/users', {
+                fetch(api + '/api/users', {
                     headers: {
                         'Content-Type': 'application/json',
                         'authorization': 'Bearer ' + token
@@ -209,7 +255,7 @@
                 const password = prompt("Password")
                 loader.style.display= 'block'
 
-                fetch(api + '/login_check', {
+                fetch(api + '/api/login_check', {
                     headers:{
                         'Accept': 'application/json',
                         'Content-Type':'application/json'
